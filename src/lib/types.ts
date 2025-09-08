@@ -42,13 +42,6 @@ export interface Favorite {
   search_title: string; // 搜索时使用的标题
 }
 
-// 用户数据结构
-export interface User {
-  username: string;
-  role?: string;
-  created_at?: string;
-}
-
 // 存储接口
 export interface IStorage {
   // 播放记录相关
@@ -94,7 +87,7 @@ export interface IStorage {
   deleteSkipConfig(userName: string, key: string): Promise<void>;
 
   // 用户列表
-  getAllUsers(): Promise<User[]>;
+  getAllUsers(): Promise<string[]>;
 
   // 管理员配置相关
   getAdminConfig(): Promise<AdminConfig | null>;

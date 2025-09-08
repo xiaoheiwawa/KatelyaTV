@@ -1,7 +1,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 
 import { AdminConfig } from './admin.types';
-import { EpisodeSkipConfig, Favorite, IStorage, PlayRecord, User, UserSettings } from './types';
+import { EpisodeSkipConfig, Favorite, IStorage, PlayRecord, UserSettings } from './types';
 
 // 搜索历史最大条数
 const SEARCH_HISTORY_LIMIT = 20;
@@ -39,21 +39,7 @@ interface D1ExecResult {
 
 // 获取全局D1数据库实例
 function getD1Database(): D1Database {
-  // 在 Cloudflare Pages 环境中，DB 通过全局绑定可用
-  if (typeof globalThis !== 'undefined') {
-    // 尝试直接访问全局 DB
-    const globalDB = (globalThis as any).DB;
-    if (globalDB) {
-      return globalDB as D1Database;
-    }
-  }
-  
-  // 回退到 process.env（用于本地开发）
-  if (process.env.DB) {
-    return (process.env as any).DB as D1Database;
-  }
-  
-  throw new Error('D1 database not available');
+  return (process.env as any).DB as D1Database;
 }
 
 export class D1Storage implements IStorage {
@@ -442,20 +428,14 @@ export class D1Storage implements IStorage {
   }
 
   // 用户列表
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<string[]> {
     try {
       const db = await this.getDatabase();
       const result = await db
-        .prepare('SELECT username, created_at FROM users ORDER BY created_at ASC')
-        .all<{ username: string; created_at: string }>();
+        .prepare('SELECT username FROM users ORDER BY created_at ASC')
+        .all<{ username: string }>();
 
-      const ownerUsername = process.env.USERNAME || 'admin';
-      
-      return result.results.map((row) => ({
-        username: row.username,
-        role: row.username === ownerUsername ? 'owner' : 'user',
-        created_at: row.created_at
-      }));
+      return result.results.map((row) => row.username);
     } catch (err) {
       console.error('Failed to get all users:', err);
       throw err;
